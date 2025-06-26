@@ -3,7 +3,7 @@ import sqlite3
 
 root = Tk()
 root.title('Hola mundo: todo list')
-root.geometry('500x500')
+root.geometry('400x500')
 
 conn = sqlite3.connect('todo.db')
 
@@ -20,6 +20,14 @@ c.execute("""
 
 conn.commit()
 
+def remove(id):
+    def _remove():
+        c.execute("DELETE FROM todo WHERE id = ?", (id, ))
+        conn.commit()
+        render_todos()
+
+    return _remove
+
 # Currying!
 def complete(id):
     def _complete():
@@ -32,8 +40,9 @@ def complete(id):
 
 def render_todos():
     rows = c.execute("SELECT * FROM todo").fetchall()
-    print(rows)
 
+    for widget in frame.winfo_children():
+        widget.destroy()
     for i in range(0,len(rows)):
         id = rows[i][0]
         completed = rows[i][3]
@@ -41,6 +50,8 @@ def render_todos():
         color = "#8B8B8B" if complete else "#ffffff"
         l = Checkbutton(frame, text=description, fg=color , width=42, anchor='w', command=complete(id))
         l.grid(row=i, column=0, sticky='w')
+        btn = Button(frame, text='Eliminar', command=remove(id))
+        btn.grid(row=i, column=1)
         l.select() if completed else l.deselect()
 
 
